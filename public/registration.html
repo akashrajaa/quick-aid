@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikAid Registration</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* same styles as before ... */
+    * {margin:0;padding:0;box-sizing:border-box}
+    body {font-family:'Inter',Arial,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
+    .container {background:rgba(255,255,255,0.95);padding:40px;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.1);width:100%;max-width:500px;backdrop-filter:blur(10px)}
+    h2 {text-align:center;margin-bottom:30px;color:#1e293b;font-size:28px;font-weight:700}
+    .form-group {margin-bottom:20px}
+    label {display:block;margin-bottom:8px;font-weight:600;color:#374151}
+    input,select {width:100%;padding:12px 16px;border:2px solid #e5e7eb;border-radius:12px;font-size:16px;transition:all .3s ease;background:rgba(255,255,255,0.8)}
+    input:focus,select:focus {outline:none;border-color:#667eea;box-shadow:0 0 0 4px rgba(102,126,234,0.1)}
+    button {width:100%;padding:15px;margin-top:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;transition:all .3s ease;box-shadow:0 8px 32px rgba(102,126,234,0.3)}
+    button:hover {transform:translateY(-2px);box-shadow:0 16px 48px rgba(102,126,234,0.4)}
+    .extra-field {display:none;animation:slideDown .3s ease}
+    @keyframes slideDown {0%{opacity:0;transform:translateY(-10px)}100%{opacity:1;transform:translateY(0)}}
+    .success-message,.error-message{padding:15px;border-radius:12px;text-align:center;margin-bottom:20px;display:none}
+    .success-message{background:#10b981;color:white}
+    .error-message{background:#ef4444;color:white}
+    .back-btn{position:absolute;top:20px;left:20px;background:none;border:none;font-size:24px;color:#6b7280;cursor:pointer;text-decoration:none}
+    .login-link{text-align:center;margin-top:20px;color:#6b7280}
+    .login-link a{color:#667eea;text-decoration:none;font-weight:600}
+    .login-link a:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+  <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+
+  <div class="container">
+    <h2><i class="fas fa-user-plus"></i> Registration</h2>
+    
+    <div id="successMessage" class="success-message"></div>
+    <div id="errorMessage" class="error-message"></div>
+    
+    <form id="registerForm">
+      <div class="form-group">
+        <label for="name"><i class="fas fa-user"></i> Full Name</label>
+        <input type="text" id="name" required placeholder="Enter your full name">
+      </div>
+
+      <div class="form-group">
+        <label for="mobile"><i class="fas fa-phone"></i> Mobile Number</label>
+        <input type="tel" id="mobile" required pattern="[0-9]{10}" placeholder="10-digit mobile number">
+      </div>
+
+      <div class="form-group">
+        <label for="age"><i class="fas fa-calendar"></i> Age</label>
+        <input type="number" id="age" required min="1" max="120" placeholder="Enter your age">
+      </div>
+
+      <div class="form-group">
+        <label for="password"><i class="fas fa-lock"></i> Password</label>
+        <input type="password" id="password" required minlength="6" placeholder="Enter password (min 6 characters)">
+      </div>
+
+      <div class="form-group">
+        <label for="category"><i class="fas fa-users"></i> Account Type</label>
+        <select id="category" required onchange="showExtraField()">
+          <option value="">Select Account Type</option>
+          <option value="user">User</option>
+          <option value="hospital">Hospital</option>
+          <option value="ambulance">Ambulance Driver</option>
+        </select>
+      </div>
+
+      <!-- Extra fields for hospital -->
+      <div id="hospitalField" class="extra-field form-group">
+        <label for="hospitalName"><i class="fas fa-hospital"></i> Hospital Name</label>
+        <input type="text" id="hospitalName" placeholder="Enter hospital name">
+      </div>
+
+      <div id="hospitalAddressField" class="extra-field form-group">
+        <label for="hospitalAddress"><i class="fas fa-map-marker-alt"></i> Hospital Address</label>
+        <input type="text" id="hospitalAddress" placeholder="Enter hospital address">
+      </div>
+
+      <div id="hospitalLicenseField" class="extra-field form-group">
+        <label for="hospitalLicense"><i class="fas fa-id-card"></i> Hospital License Number</label>
+        <input type="text" id="hospitalLicense" placeholder="Enter hospital license number">
+      </div>
+
+      <div id="hospitalLocationField" class="extra-field form-group">
+        <label for="hospitalLocation"><i class="fas fa-location-dot"></i> Hospital Location</label>
+        <input type="text" id="hospitalLocation" placeholder="Enter Latitude,Longitude" required>
+        <small style="color: gray;">Example: 11.234567, 77.123456</small>
+      </div>
+
+      <!-- Extra fields for ambulance -->
+      <div id="ambulanceField" class="extra-field form-group">
+        <label for="ambulanceLicense"><i class="fas fa-id-card"></i> Ambulance License</label>
+        <input type="text" id="ambulanceLicense" placeholder="Enter your ambulance license number">
+      </div>
+
+      <button type="submit"><i class="fas fa-user-plus"></i> Register Account</button>
+    </form>
+    
+    <p class="login-link">
+      Already have an account? <a href="login.html"><i class="fas fa-sign-in-alt"></i> Login here</a>
+    </p>
+  </div>
+
+  <script>
+    function showExtraField() {
+      const category = document.getElementById("category").value;
+      const hospitalField = document.getElementById("hospitalField");
+      const hospitalAddressField = document.getElementById("hospitalAddressField");
+      const hospitalLicenseField = document.getElementById("hospitalLicenseField");
+      const hospitalLocationField = document.getElementById("hospitalLocationField");
+      const ambulanceField = document.getElementById("ambulanceField");
+      
+      // Hide all extra fields first and reset required attributes
+      hospitalField.style.display = "none";
+      hospitalAddressField.style.display = "none";
+      hospitalLicenseField.style.display = "none";
+      hospitalLocationField.style.display = "none";
+      ambulanceField.style.display = "none";
+      
+      // Reset required attributes
+      document.getElementById("hospitalName").required = false;
+      document.getElementById("hospitalAddress").required = false;
+      document.getElementById("hospitalLicense").required = false;
+      document.getElementById("hospitalLocation").required = false;
+      document.getElementById("ambulanceLicense").required = false;
+      
+      if (category === "hospital") {
+        hospitalField.style.display = "block";
+        hospitalAddressField.style.display = "block";
+        hospitalLicenseField.style.display = "block";
+        hospitalLocationField.style.display = "block";
+        document.getElementById("hospitalName").required = true;
+        document.getElementById("hospitalAddress").required = true;
+        document.getElementById("hospitalLicense").required = true;
+        document.getElementById("hospitalLocation").required = true;
+
+        // auto detect location
+        getHospitalLocation();
+      } else if (category === "ambulance") {
+        ambulanceField.style.display = "block";
+        document.getElementById("ambulanceLicense").required = true;
+      }
+    }
+
+    function getHospitalLocation() {
+      const field = document.getElementById("hospitalLocation");
+      if (!field) return;
+
+      if (navigator.geolocation) {
+        field.value = "Detecting...";
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude.toFixed(6);
+            const lng = pos.coords.longitude.toFixed(6);
+            field.value = `${lat}, ${lng}`;
+          },
+          (err) => {
+            field.value = "Location unavailable";
+          }
+        );
+      } else {
+        field.value = "Geolocation not supported";
+      }
+    }
+
+    // Mobile input restrict
+    document.getElementById('mobile').addEventListener('input', function() {
+      this.value = this.value.replace(/[^0-9]/g, '').slice(0,10);
+    });
+
+    // Form submit
+    document.getElementById("registerForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const successMessage = document.getElementById("successMessage");
+      const errorMessage = document.getElementById("errorMessage");
+      successMessage.style.display="none"; errorMessage.style.display="none";
+
+      const user = {
+        name: document.getElementById("name").value.trim(),
+        mobile: document.getElementById("mobile").value.trim(),
+        age: parseInt(document.getElementById("age").value),
+        password: document.getElementById("password").value,
+        category: document.getElementById("category").value,
+        hospitalName: document.getElementById("hospitalName").value.trim() || null,
+        hospitalAddress: document.getElementById("hospitalAddress").value.trim() || null,
+        hospitalLicense: document.getElementById("hospitalLicense").value.trim() || null,
+        hospitalLocation: document.getElementById("hospitalLocation").value.trim() || null,
+        ambulanceLicense: document.getElementById("ambulanceLicense").value.trim() || null,
+        registeredAt: new Date().toISOString()
+      };
+
+      // validation
+      if (!user.mobile.match(/^[0-9]{10}$/)) {
+        errorMessage.textContent = "Please enter a valid 10-digit mobile number";
+        errorMessage.style.display = "block"; return;
+      }
+      if (user.password.length < 6) {
+        errorMessage.textContent = "Password must be at least 6 characters long";
+        errorMessage.style.display = "block"; return;
+      }
+      if (user.category==="hospital" && (!user.hospitalName || !user.hospitalAddress || !user.hospitalLicense || !user.hospitalLocation)) {
+        errorMessage.textContent = "Hospital details (name, address, license, location) are required!";
+        errorMessage.style.display="block"; return;
+      }
+      if (user.category==="ambulance" && !user.ambulanceLicense) {
+        errorMessage.textContent="Ambulance License required"; errorMessage.style.display="block"; return;
+      }
+
+      let users = [];
+      try { users = JSON.parse(localStorage.getItem("users"))||[] } catch(e){ users=[] }
+
+      // Check for duplicate registration based on category
+      const existingUser = users.find(u => u.mobile === user.mobile && u.category === user.category);
+      
+      if (existingUser) {
+        let categoryName = user.category === "user" ? "Patient" : 
+                          user.category === "hospital" ? "Hospital" : "Ambulance Driver";
+        errorMessage.textContent = `This mobile number is already registered as ${categoryName}!`;
+        errorMessage.style.display = "block"; 
+        return;
+      }
+
+      // For hospitals, also check if the hospital license is already registered
+      if (user.category === "hospital") {
+        const existingHospitalLicense = users.find(u => 
+          u.category === "hospital" && 
+          u.hospitalLicense === user.hospitalLicense
+        );
+        if (existingHospitalLicense) {
+          errorMessage.textContent = "This hospital license number is already registered!";
+          errorMessage.style.display = "block";
+          return;
+        }
+      }
+
+      // For ambulance drivers, also check if the ambulance license is already registered
+      if (user.category === "ambulance") {
+        const existingAmbulanceLicense = users.find(u => 
+          u.category === "ambulance" && 
+          u.ambulanceLicense === user.ambulanceLicense
+        );
+        if (existingAmbulanceLicense) {
+          errorMessage.textContent = "This ambulance license number is already registered!";
+          errorMessage.style.display = "block";
+          return;
+        }
+      }
+
+      users.push(user);
+      localStorage.setItem("users",JSON.stringify(users));
+      
+      let categoryName = user.category === "user" ? "Patient" : 
+                        user.category === "hospital" ? "Hospital" : "Ambulance Driver";
+      successMessage.textContent = `${categoryName} registration successful! Redirecting...`;
+      successMessage.style.display = "block";
+
+      document.getElementById("registerForm").reset();
+      setTimeout(() => window.location.href = "login.html", 2000);
+    });
+  </script>
+</body>
+</html>

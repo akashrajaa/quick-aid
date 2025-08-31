@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikAid Emergency Dashboard</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .phone-container {
+      width: 380px;
+      height: 700px;
+      background: white;
+      border-radius: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .screen {
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      padding: 30px 25px;
+      position: relative;
+    }
+    .screen.active { display: flex; }
+
+    .header { text-align: center; margin-bottom: 30px; }
+    .header h2 {
+      color: #dc2626;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .user-info {
+      background: #fef2f2;
+      padding: 15px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      border-left: 4px solid #dc2626;
+    }
+
+    .emergency-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .emergency-option {
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      border: 2px solid #fecaca;
+      border-radius: 20px;
+      padding: 20px 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+
+    .emergency-option:hover {
+      background: linear-gradient(135deg, #fca5a5 0%, #f87171 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.2);
+    }
+
+    .emergency-option.selected {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+      color: white !important;
+      border-color: #b91c1c !important;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+    }
+
+    .emergency-icon { font-size: 28px; margin-bottom: 10px; display: block; }
+
+    .location-box {
+      background: #f3f4f6;
+      padding: 15px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      text-align: center;
+      border: 1px solid #d1d5db;
+    }
+    .location-box i { color: #dc2626; margin-right: 8px; }
+
+    .send-report-btn {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      color: white;
+      border: none;
+      padding: 18px;
+      border-radius: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: auto;
+    }
+    .send-report-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
+    }
+    .send-report-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: #9ca3af;
+    }
+
+    /* SOS Screen */
+    .sos-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+    .sos-button {
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      color: white; border: none;
+      font-size: 36px; font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 30px;
+      box-shadow: 0 20px 40px rgba(220, 38, 38, 0.4);
+    }
+    .sos-button:hover { transform: scale(1.05); }
+    .sos-button:active { transform: scale(0.95); }
+
+    .sos-message { text-align: center; color: #374151; font-size: 16px; line-height: 1.6; max-width: 280px; }
+
+    .status-message {
+      text-align: center;
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+    .status-waiting { background: #fef3c7; color: #d97706; border: 2px solid #fbbf24; }
+    .status-success { background: #d1fae5; color: #059669; border: 2px solid #10b981; }
+
+    .pulse { animation: pulse 1.5s infinite; }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+      70% { box-shadow: 0 0 0 20px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+
+    .back-btn {
+      position: absolute; top: 20px; left: 20px;
+      background: none; border: none;
+      font-size: 24px; color: #6b7280; cursor: pointer;
+    }
+
+    .notification {
+      position: fixed; top: 20px; right: 20px;
+      background: #10b981; color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      z-index: 1000; display: none;
+      font-weight: 600;
+      animation: slideIn 0.3s ease-out;
+    }
+    .notification.error { background: #ef4444; }
+    .notification.warning { background: #f59e0b; }
+    .notification.success { background: #10b981; }
+    .notification.info { background: #3b82f6; }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-container">
+    <!-- Screen 1: Emergency Selection -->
+    <div id="screen1" class="screen active">
+      <div class="header">
+        <h2><i class="fas fa-exclamation-triangle"></i> Report Emergency</h2>
+      </div>
+      <div class="user-info">
+        <strong>Welcome, <span id="userName">User</span></strong><br>
+        <small>Select emergency type and send SOS</small>
+      </div>
+
+      <div class="emergency-grid">
+        <div class="emergency-option" onclick="selectEmergency('Fire', this)"><i class="fas fa-fire emergency-icon"></i><div>Fire</div></div>
+        <div class="emergency-option" onclick="selectEmergency('Flood', this)"><i class="fas fa-water emergency-icon"></i><div>Flood</div></div>
+        <div class="emergency-option" onclick="selectEmergency('Electric Shock', this)"><i class="fas fa-bolt emergency-icon"></i><div>Electric Shock</div></div>
+        <div class="emergency-option" onclick="selectEmergency('Accident', this)"><i class="fas fa-car-crash emergency-icon"></i><div>Accident</div></div>
+        <div class="emergency-option" onclick="selectEmergency('Medical', this)"><i class="fas fa-heartbeat emergency-icon"></i><div>Medical</div></div>
+        <div class="emergency-option" onclick="selectEmergency('Other', this)"><i class="fas fa-exclamation emergency-icon"></i><div>Other</div></div>
+      </div>
+
+      <div class="location-box">
+        <i class="fas fa-map-marker-alt"></i>
+        <strong>Location:</strong> 
+        <span id="locationText"><a id="locationLink1" href="#" target="_blank">Getting location...</a></span>
+      </div>
+
+      <button class="send-report-btn" id="sendReportBtn" disabled onclick="goToSOSScreen()">
+        <i class="fas fa-paper-plane"></i> Select Emergency Type First
+      </button>
+    </div>
+
+    <!-- Screen 2: SOS Button -->
+    <div id="screen2" class="screen">
+      <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
+      <div class="header"><h2><i class="fas fa-exclamation-triangle"></i> EMERGENCY</h2></div>
+      <div class="sos-container">
+        <button class="sos-button" onclick="sendSOS()">SOS</button>
+        <div class="sos-message">
+          <strong>Emergency Type:</strong> <span id="selectedEmergencyType">None</span><br><br>
+          Press the SOS button to send emergency alert to nearby ambulance drivers.<br>
+          They will be notified of your location and emergency type.
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 3: Waiting for Help -->
+    <div id="screen3" class="screen">
+      <div class="header"><h2><i class="fas fa-ambulance"></i> HELP ON THE WAY</h2></div>
+      <div id="statusContainer">
+        <div class="status-message status-waiting">
+          <i class="fas fa-spinner fa-spin"></i><br>
+          Sending SOS to ambulance drivers...<br>
+          <small>Please stay calm and wait for assistance</small>
+        </div>
+      </div>
+      <div class="sos-container">
+        <button class="sos-button pulse" disabled>SOS</button>
+        <div class="sos-message">
+          <strong>Emergency:</strong> <span id="activeEmergencyType">None</span><br>
+          <strong>Location:</strong> <span id="activeLocation"><a id="locationLink2" href="#" target="_blank">Getting location...</a></span><br>
+          <strong>Time:</strong> <span id="sosTime">--:--</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notification" id="notification"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    let selectedEmergency = "";
+    let currentLocation = "Location unavailable";
+    let socket = null;
+    let currentUser = null;
+
+    window.onload = function() {
+      try {
+        currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (currentUser) document.getElementById('userName').textContent = currentUser.name;
+      } catch (e) { console.error('User load error:', e); }
+
+      try {
+        socket = io();
+        socket.on('sosConfirmed', d => showNotification(`SOS sent to ${d.driverCount || 0} ambulance drivers`, 'success'));
+        socket.on('sosAccepted', d => {
+          document.getElementById('statusContainer').innerHTML = `
+            <div class="status-message status-success">
+              <i class="fas fa-check-circle"></i><br>
+              Help Accepted!<br>
+              <strong>${d.driverName}</strong> is coming<br>
+              <small>${d.message}</small>
+            </div>`;
+          showNotification(`${d.driverName} is coming to help you!`, 'success');
+        });
+      } catch (e) { console.error('Socket error:', e); }
+
+      getLocation();
+    };
+
+    function selectEmergency(type, element) {
+      document.querySelectorAll('.emergency-option').forEach(o => o.classList.remove('selected'));
+      element.classList.add('selected');
+      selectedEmergency = type;
+      let btn = document.getElementById('sendReportBtn');
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fas fa-paper-plane"></i> Send ${type} Emergency`;
+      showNotification(`✅ ${type} Emergency Selected!`, 'success');
+    }
+
+    function getLocation() {
+      const link1 = document.getElementById('locationLink1');
+      const link2 = document.getElementById('locationLink2');
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            const lat = pos.coords.latitude.toFixed(6);
+            const lng = pos.coords.longitude.toFixed(6);
+            currentLocation = `${lat}, ${lng}`;
+            const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+            [link1, link2].forEach(el => { el.textContent = currentLocation; el.href = mapsUrl; el.style.color = '#059669'; });
+          },
+          err => {
+            let msg = "Location unavailable";
+            if (err.code === err.PERMISSION_DENIED) msg = "Location access denied";
+            else if (err.code === err.TIMEOUT) msg = "Location timeout";
+            currentLocation = msg;
+            [link1, link2].forEach(el => { el.textContent = msg; el.removeAttribute("href"); el.style.color = '#ef4444'; });
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+        );
+      } else {
+        currentLocation = "Geolocation not supported";
+        [link1, link2].forEach(el => { el.textContent = currentLocation; el.removeAttribute("href"); el.style.color = '#ef4444'; });
+      }
+    }
+
+    function goToSOSScreen() {
+      if (!selectedEmergency) return showNotification('Please select an emergency type first!', 'error');
+      document.getElementById('screen1').classList.remove('active');
+      document.getElementById('screen2').classList.add('active');
+      document.getElementById('selectedEmergencyType').textContent = selectedEmergency;
+    }
+
+    function sendSOS() {
+      document.getElementById('screen2').classList.remove('active');
+      document.getElementById('screen3').classList.add('active');
+      document.getElementById('activeEmergencyType').textContent = selectedEmergency;
+      document.getElementById('sosTime').textContent = new Date().toLocaleTimeString();
+      const sosData = {
+        sosId: Date.now().toString(),
+        userId: socket ? socket.id : 'no-socket',
+        userName: currentUser ? currentUser.name : 'Anonymous',
+        userMobile: currentUser ? currentUser.mobile : 'N/A',
+        type: selectedEmergency,
+        location: currentLocation,
+        time: new Date().toLocaleString()
+      };
+      if (socket) socket.emit('sendSOS', sosData);
+      showNotification('SOS sent! Waiting for ambulance response...', 'info');
+    }
+
+    function goBack() {
+      document.getElementById('screen2').classList.remove('active');
+      document.getElementById('screen1').classList.add('active');
+    }
+
+    function showNotification(msg, type = 'info') {
+      let n = document.getElementById('notification');
+      n.textContent = msg; n.className = `notification ${type}`; n.style.display = 'block';
+      setTimeout(() => n.style.display = 'none', 3000);
+    }
+  </script>
+</body>
+</html>

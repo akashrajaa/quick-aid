@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikAid Home</title>
+  <style>
+    /* Reset default margin/padding */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      animation: fadeIn 1.2s ease;
+    }
+
+    h1 {
+      font-size: 2.3rem;
+      color: #00796b;
+      margin-bottom: 15px;
+    }
+
+    .emoji {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 15px;
+      animation: bounce 1.5s infinite;
+    }
+
+    p {
+      margin: 15px 0;
+      font-size: 1.1rem;
+      color: #444;
+    }
+
+    a {
+      display: inline-block;
+      text-decoration: none;
+      background: linear-gradient(135deg, #00796b, #004d40);
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    a:hover {
+      background: linear-gradient(135deg, #004d40, #00796b);
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <span class="emoji">🚑</span>
+    <h1>Welcome to QuikAid</h1>
+    <p><a href="/login">Go to Login</a></p>
+  </div>
+</body>
+</html>

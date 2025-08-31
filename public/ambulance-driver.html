@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuikAid Ambulance Driver Dashboard</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* (your existing CSS unchanged) */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .header h1 {
+      color: #1e40af;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #10b981;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: 600;
+    }
+
+    .status-badge.offline {
+      background: #ef4444;
+    }
+
+    .status-badge.connecting {
+      background: #f59e0b;
+    }
+
+    .driver-info {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      border-left: 4px solid #1e40af;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border: 1px solid #e5e7eb;
+    }
+
+    .stat-number {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      color: #6b7280;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .alerts-section {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .alerts-header {
+      margin-bottom: 20px;
+    }
+
+    .alerts-header h2 {
+      color: #1f2937;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .alerts-container {
+      max-height: 500px;
+      overflow-y: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 15px;
+    }
+
+    .no-alerts {
+      text-align: center;
+      color: #6b7280;
+      padding: 40px 20px;
+      font-size: 16px;
+    }
+
+    .alert-card {
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      border: 2px solid #fecaca;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .alert-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.15);
+      border-color: #f87171;
+    }
+
+    .alert-card.accepted {
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      border-color: #6ee7b7;
+    }
+
+    .alert-card.taken {
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      border-color: #d1d5db;
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .alert-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .emergency-type {
+      background: #dc2626;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .alert-time {
+      color: #6b7280;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .alert-content {
+      margin-bottom: 15px;
+    }
+
+    .alert-detail {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      color: #374151;
+      font-size: 14px;
+    }
+
+    .alert-detail i {
+      margin-right: 10px;
+      width: 16px;
+      color: #6b7280;
+    }
+
+    .alert-actions {
+      text-align: center;
+      padding-top: 15px;
+      border-top: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .accept-btn {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+
+    .accept-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+    }
+
+    .status-indicator {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #dc2626;
+    }
+
+    .status-indicator.accepted {
+      background: #10b981;
+    }
+
+    .status-indicator.taken {
+      background: #6b7280;
+    }
+
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+      }
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #10b981;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      z-index: 1000;
+      display: none;
+      max-width: 350px;
+    }
+
+    .notification.error {
+      background: #ef4444;
+    }
+
+    .notification.warning {
+      background: #f59e0b;
+    }
+
+    .hospital-info {
+      background: rgba(16, 185, 129, 0.1);
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: 16px;
+      border-left: 4px solid #059669;
+    }
+
+    .hospital-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .hospital-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: 8px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .hospital-name {
+      font-weight: 600;
+      color: #059669;
+    }
+
+    .hospital-distance {
+      color: #059669;
+      font-weight: 600;
+      background: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+        padding: 20px;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1><i class="fas fa-ambulance"></i> Ambulance Driver Dashboard</h1>
+      <div class="status-badge connecting" id="statusBadge">
+        <i class="fas fa-spinner fa-spin"></i>
+        <span id="statusText">Connecting...</span>
+      </div>
+    </div>
+
+    <div class="driver-info">
+      <strong><i class="fas fa-user"></i> Driver:</strong> <span id="driverName">Loading...</span><br>
+      <small><i class="fas fa-info-circle"></i> Ready to receive emergency alerts with nearby hospital information</small>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="alertsReceived">0</div>
+        <div class="stat-label">Alerts Received</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="alertsAccepted">0</div>
+        <div class="stat-label">Alerts Accepted</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="onlineDrivers">0</div>
+        <div class="stat-label">Online Drivers</div>
+      </div>
+    </div>
+
+    <div class="alerts-section">
+      <div class="alerts-header">
+        <h2><i class="fas fa-exclamation-triangle"></i> Emergency Alerts</h2>
+      </div>
+      
+      <div class="alerts-container" id="alertsContainer">
+        <div class="no-alerts">
+          <i class="fas fa-clipboard-list" style="font-size: 48px; color: #d1d5db; margin-bottom: 15px;"></i><br>
+          No emergency alerts yet...<br>
+          <small>Waiting for emergency calls from users</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ ADDED: Nearest hospital info box (hidden by default) -->
+  <div id="hospital-info" class="hospital-info" style="display:none; margin-top:20px;"></div>
+
+  <div class="notification" id="notification"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Global variables
+    let socket = null;
+    let driverName = '';
+    let stats = {
+      alertsReceived: 0,
+      alertsAccepted: 0,
+      onlineDrivers: 0
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get current user from login
+      try {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (currentUser && currentUser.category === 'ambulance') {
+          driverName = currentUser.name;
+          // Also show license info if available
+          const licenseInfo = currentUser.ambulanceLicense ? ` (License: ${currentUser.ambulanceLicense})` : '';
+          document.getElementById('driverName').innerHTML = `${driverName}${licenseInfo}`;
+        } else {
+          // Redirect to login if not a valid ambulance driver
+          alert('Please login as an ambulance driver first!');
+          window.location.href = 'login.html';
+          return;
+        }
+      } catch (e) {
+        console.error('Error loading driver data:', e);
+        alert('Please login as an ambulance driver first!');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Initialize Socket.IO
+      initializeSocket();
+
+      // Request notification permission
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    });
+
+    function initializeSocket() {
+      socket = io();
+
+      socket.on('connect', () => {
+        console.log('Connected to server:', socket.id);
+        updateStatus('online', 'Online');
+        
+        // Register as ambulance driver
+        socket.emit('registerDriver', { 
+          name: driverName,
+          socketId: socket.id,
+          timestamp: new Date().toISOString()
+        });
+      });
+
+      socket.on('disconnect', () => {
+        console.log('Disconnected from server');
+        updateStatus('offline', 'Disconnected');
+      });
+
+      socket.on('driverRegistered', (data) => {
+        console.log('Driver registered successfully:', data);
+        showNotification(`Welcome ${driverName}! You are now online and ready to receive emergency alerts.`, 'success');
+        updateStats({ onlineDrivers: data.driverCount || 1 });
+      });
+
+      // Listen for emergency SOS
+      socket.on('receiveSOS', (sosData) => {
+        console.log('Received SOS:', sosData);
+        handleNewSOS(sosData);
+      });
+
+      // Handle SOS acceptance confirmation
+      socket.on('sosAcceptConfirmed', (data) => {
+        console.log('SOS acceptance confirmed:', data);
+        showNotification(`Successfully accepted emergency: ${data.sosId}`, 'success');
+        updateStats({ alertsAccepted: stats.alertsAccepted + 1 });
+        
+        // Show patient details and hospital distances
+        showPatientDetails(data);
+
+        // NEW: display nearest hospital if server sent it in confirmation
+        const nearestFromConfirm = data.nearestHospital || (data.nearbyHospitals && data.nearbyHospitals[0]);
+        if (nearestFromConfirm) {
+          showNearestHospital(nearestFromConfirm);
+        }
+      });
+
+      // Handle SOS acceptance failure
+      socket.on('sosAcceptFailed', (data) => {
+        console.log('SOS acceptance failed:', data);
+        showNotification(data.message || 'Failed to accept SOS', 'error');
+      });
+
+      // Handle when SOS is taken by another driver
+      socket.on('sosTaken', (data) => {
+        console.log('SOS taken by another driver:', data);
+        markSOSTaken(data.sosId, data.acceptedBy);
+      });
+
+      // Handle driver count updates
+      socket.on('driverCountUpdate', (data) => {
+        updateStats({ onlineDrivers: data.count });
+      });
+
+      socket.on('connect_error', (error) => {
+        console.error('Connection error:', error);
+        updateStatus('offline', 'Connection Error');
+      });
+
+      // ✅ ADDED: Show nearest hospital when SOS accepted (broadcast from server)
+      socket.on("sosAccepted", (data) => {
+        const { nearestHospital } = data || {};
+        if (nearestHospital) {
+          showNearestHospital(nearestHospital);
+        } else if (data && data.nearbyHospitals && data.nearbyHospitals.length) {
+          showNearestHospital(data.nearbyHospitals[0]);
+        }
+      });
+    }
+
+    // NEW helper: render nearest hospital info in the bottom box
+    function showNearestHospital(hospital) {
+      if (!hospital) return;
+      const hospitalDiv = document.getElementById("hospital-info");
+      hospitalDiv.style.display = "block";
+      hospitalDiv.innerHTML = `
+        <h3 style="color:#059669; margin-bottom:8px;">
+          <i class="fas fa-hospital"></i> Nearest Hospital
+        </h3>
+        <p><strong>${hospital.name || 'Unknown Hospital'}</strong></p>
+        <p>📍 ${hospital.address || "Address not available"}</p>
+        <p>🛣️ Distance: ${Number(hospital.distance || hospital.dist || 0).toFixed(2)} km</p>
+      `;
+      // Optionally scroll into view
+      hospitalDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+
+    function handleNewSOS(sosData) {
+      // Update stats
+      updateStats({ alertsReceived: stats.alertsReceived + 1 });
+
+      // Create alert card
+      createAlertCard(sosData);
+
+      // Show browser notification
+      showBrowserNotification(sosData);
+
+      // Show in-app notification
+      showNotification(`🚨 New ${sosData.type} emergency at ${sosData.location}`, 'warning');
+
+      // Play notification sound
+      playNotificationSound();
+    }
+
+    function createAlertCard(sosData) {
+      const alertsContainer = document.getElementById('alertsContainer');
+      
+      // Remove "no alerts" message if present
+      const noAlerts = alertsContainer.querySelector('.no-alerts');
+      if (noAlerts) {
+        noAlerts.remove();
+      }
+
+      // Create hospital list HTML if hospitals are available
+      let hospitalListHTML = '';
+      if (sosData.nearbyHospitals && sosData.nearbyHospitals.length > 0) {
+        hospitalListHTML = `
+          <div class="hospital-info">
+            <h4 style="color: #059669; margin-bottom: 12px;"><i class="fas fa-hospital"></i> Nearby Hospitals:</h4>
+            <div class="hospital-list">
+              ${sosData.nearbyHospitals.map(hospital => `
+                <div class="hospital-item">
+                  <span class="hospital-name">${hospital.name}</span>
+                  <span class="hospital-distance">${hospital.distance.toFixed(1)} km</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // Create alert card element
+      const alertCard = document.createElement('div');
+      alertCard.className = 'alert-card pulse-animation';
+      alertCard.setAttribute('data-sos-id', sosData.sosId);
+      
+      alertCard.innerHTML = `
+        <div class="status-indicator"></div>
+        <div class="alert-header">
+          <div class="emergency-type">${sosData.type}</div>
+          <div class="alert-time">${sosData.time}</div>
+        </div>
+        <div class="alert-content">
+          <div class="alert-detail">
+            <i class="fas fa-user"></i>
+            <strong>Patient:</strong> ${sosData.userName || 'Anonymous'}
+          </div>
+          <div class="alert-detail">
+            <i class="fas fa-phone"></i>
+            <strong>Mobile:</strong> ${sosData.userMobile || 'N/A'}
+          </div>
+          <div class="alert-detail">
+            <i class="fas fa-map-marker-alt"></i>
+            <strong>Location:</strong> ${sosData.location}
+          </div>
+          <div class="alert-detail">
+            <i class="fas fa-clock"></i>
+            <strong>Time:</strong> ${sosData.time}
+          </div>
+          <div class="alert-detail">
+            <i class="fas fa-id-badge"></i>
+            <strong>SOS ID:</strong> ${sosData.sosId}
+          </div>
+          ${hospitalListHTML}
+        </div>
+        <div class="alert-actions">
+          <button class="accept-btn" onclick="acceptSOS('${sosData.sosId}', '${sosData.userId}')">
+            <i class="fas fa-check"></i> Accept Emergency
+          </button>
+        </div>
+      `;
+
+      // Add to top of alerts container
+      alertsContainer.insertBefore(alertCard, alertsContainer.firstChild);
+
+      // Auto-remove pulse animation after 3 seconds
+      setTimeout(() => {
+        alertCard.classList.remove('pulse-animation');
+      }, 3000);
+    }
+
+    function acceptSOS(sosId, userId) {
+      console.log('Accepting SOS:', sosId);
+      
+      // Find the alert card
+      const alertCard = document.querySelector(`[data-sos-id="${sosId}"]`);
+      if (!alertCard || alertCard.classList.contains('accepted') || alertCard.classList.contains('taken')) {
+        showNotification('This emergency is no longer available', 'error');
+        return;
+      }
+
+      // Mark as accepted immediately (optimistic update)
+      alertCard.classList.add('accepted');
+      alertCard.querySelector('.status-indicator').classList.add('accepted');
+      alertCard.querySelector('.alert-actions').innerHTML = `
+        <div style="color: #10b981; font-weight: 600;">
+          <i class="fas fa-check-circle"></i> Accepted by You
+        </div>
+      `;
+
+      // Send acceptance to server
+      socket.emit('acceptSOS', {
+        sosId: sosId,
+        userId: userId,
+        driverName: driverName,
+        driverSocketId: socket.id
+      });
+    }
+
+    function markSOSTaken(sosId, acceptedBy) {
+      const alertCard = document.querySelector(`[data-sos-id="${sosId}"]`);
+      if (alertCard && !alertCard.classList.contains('accepted')) {
+        alertCard.classList.add('taken');
+        alertCard.querySelector('.status-indicator').classList.add('taken');
+        alertCard.querySelector('.alert-actions').innerHTML = `
+          <div style="color: #6b7280; font-weight: 600;">
+            <i class="fas fa-times-circle"></i> Taken by ${acceptedBy}
+          </div>
+        `;
+      }
+    }
+
+    function showPatientDetails(data) {
+      // Update existing alert card with delivery option
+      const alertCard = document.querySelector(`[data-sos-id="${data.sosId}"]`);
+      if (alertCard) {
+        alertCard.querySelector('.alert-actions').innerHTML = `
+          <div style="color: #10b981; font-weight: 600; margin-bottom: 16px;">
+            <i class="fas fa-check-circle"></i> Emergency Accepted
+          </div>
+          <button onclick="markPatientDelivered('${data.sosId}')" style="margin-top: 12px; padding: 8px 16px; background: #059669; color: white; border: none; border-radius: 8px; cursor: pointer;">
+            <i class="fas fa-check"></i> Mark Patient Delivered
+          </button>
+        `;
+      }
+    }
+
+    function markPatientDelivered(sosId) {
+      const hospital = prompt('Enter hospital name where patient was delivered:');
+      if (hospital) {
+        socket.emit('patientArrived', {
+          sosId: sosId,
+          hospital: hospital,
+          driverName: driverName
+        });
+        showNotification(`Patient delivery recorded at ${hospital}`, 'success');
+        
+        // Update the alert card to show completion
+        const alertCard = document.querySelector(`[data-sos-id="${sosId}"]`);
+        if (alertCard) {
+          alertCard.querySelector('.alert-actions').innerHTML = `
+            <div style="color: #059669; font-weight: 600;">
+              <i class="fas fa-hospital"></i> Patient Delivered to ${hospital}
+            </div>
+          `;
+        }
+      }
+    }
+
+    function updateStatus(status, text) {
+      const statusBadge = document.getElementById('statusBadge');
+      const statusText = document.getElementById('statusText');
+      
+      statusBadge.className = `status-badge ${status}`;
+      statusText.textContent = text;
+      
+      const icon = statusBadge.querySelector('i');
+      icon.className = status === 'online' ? 'fas fa-check-circle' : 
+                     status === 'offline' ? 'fas fa-times-circle' : 
+                     'fas fa-spinner fa-spin';
+    }
+
+    function updateStats(newStats) {
+      Object.assign(stats, newStats);
+      
+      Object.keys(newStats).forEach(key => {
+        const element = document.getElementById(key);
+        if (element) {
+          element.textContent = stats[key];
+        }
+      });
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = `notification ${type}`;
+      notification.style.display = 'block';
+
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 5000);
+    }
+
+    function showBrowserNotification(sosData) {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        const notification = new Notification('🚨 Emergency Alert', {
+          body: `${sosData.type} emergency at ${sosData.location}\nFrom: ${sosData.userName || 'Anonymous User'}`,
+          icon: '/favicon.ico',
+          tag: sosData.sosId,
+          requireInteraction: true
+        });
+
+        notification.onclick = function() {
+          window.focus();
+          notification.close();
+        };
+
+        // Auto close after 10 seconds
+        setTimeout(() => {
+          notification.close();
+        }, 10000);
+      }
+    }
+
+    function playNotificationSound() {
+      // Create audio context for notification sound
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.3);
+      } catch (error) {
+        console.log('Could not play notification sound:', error);
+      }
+    }
+
+    // Handle page visibility change
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) {
+        console.log('Page hidden');
+      } else {
+        console.log('Page visible');
+        if (socket && !socket.connected) {
+          socket.connect();
+        }
+      }
+    });
+
+    // Handle beforeunload
+    window.addEventListener('beforeunload', function() {
+      if (socket) {
+        socket.disconnect();
+      }
+    });
+  </script>
+</body>
+</html>
